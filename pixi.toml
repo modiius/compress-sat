@@ -7,3 +7,5 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
+earthengine-api = ">=1.7.29,<2"
+pandas = ">=3.0.3,<4"
