@@ -55,11 +55,11 @@ if __name__ == "__main__":
     parser.add_argument("--project", type=str, help="Google Cloud project ID for Earth Engine.")
     parser.add_argument("--output_dir", type=str, default="./data", help="Directory to save the downloaded data.")
     parser.add_argument("--band", type=str, default="tree", help="Dynamic World band to download.")
-    parser.add_argument("--lat", type=float, default=49.187783, help="Latitude of the point to filter Dynamic World images.")
-    parser.add_argument("--lon", type=float, default=22.480810, help="Longitude of the point to filter Dynamic World images.")
+    parser.add_argument("--lat", type=float, default=28.856825, help="Latitude of the point to filter Dynamic World images.")
+    parser.add_argument("--lon", type=float, default=44.325999, help="Longitude of the point to filter Dynamic World images.")
     args = parser.parse_args()
+    # 28.856825, 44.325999
+
 
     init_earth_engine(args.project)
-    # download_dynamic_world(args.lat, args.lon, args.band, args.output_dir)
-    data = load_dynamic_world("data/dw_trees")
-    print(data)
+    download_dynamic_world(args.lat, args.lon, args.band, args.output_dir)

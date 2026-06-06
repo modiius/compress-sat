@@ -1,5 +1,9 @@
 # TODO:
 # - change all asserts to raise Exceptions
+import math
+import sys
+
+from download import load_dynamic_world
 
 class UInt8:
     
@@ -90,15 +94,11 @@ def encode(data_str: list[str]) -> tuple[int, str]:
 
 def compress(data: str):
     data_uint8 = as_uint8(data)
-    print(f"ORIGINAL DATA: {[str(og) for og in data_uint8]}")
     first = data_uint8[0]
     delta = [data_uint8[i] - data_uint8[i+1] for i in range(len(data_uint8)-1)]
-    print(f"DELTA: {[str(d) for d in delta]}")
     zigzag = [(d<<UInt8(1))^(d>>UInt8(7)) for d in delta]
-    print(f"ZIGZAG: {[str(z) for z in zigzag]}")
     zigzag_t = transpose(zigzag)
     encoded_zigzag_t = encode(zigzag_t)
-    print(f"TUPLE: {[x for x in encoded_zigzag_t]}")
 
     result = f"{len(data_uint8):016b}{str(first)}"
     for num_zeros, remainder in encoded_zigzag_t:
@@ -127,23 +127,22 @@ def decompress(data: str):
         encode.append((num_zeros, reminder))
         data = data[(16 + reminder_len):]
     
-    print(f"TUPLE: {[x for x in encode]}")
     zigzag_t = decode(encode)
     zigzag = transpose(zigzag_t)
-    print(f"ZIGZAG: {zigzag}")
     delta = [(UInt8(int(z, 2))>>UInt8(1))^(~(UInt8(int(z, 2))&UInt8(1)) + UInt8(1)) for z in zigzag]
-    print(f"DELTA: {[str(d) for d in delta]}")
     original_data = [first_value]
     for i in range(len(delta)):
         data = original_data[i] - delta[i]
         original_data.append(data)
-    print(f"ORIGINAL DATA: {[str(og) for og in original_data]}")
     
 
 if __name__ == "__main__":
-    import random
-    data = [random.choice([UInt8(25),UInt8(24),UInt8(23)]) for _ in range(10)]
-    orig = as_str(data)
-    compressed = compress(orig)
-    print("===================")
-    decompress(compressed)
+    data = load_dynamic_world("data/dw_water")
+    print(data)
+    print(sys.getsizeof(data))
+    print([math.floor(d*100) for d in data])
+    lossy_data = [UInt8(math.floor(d*100)) for d in data]
+    uncompressed = as_str(lossy_data)
+    compressed = compress(uncompressed)
+    print(len(uncompressed))
+    print(len(compressed))
