@@ -28,10 +28,11 @@ class UInt8:
      - __and__
     """
     def __init__(self, val: int|str):
-        """Function initializing the UInt8 class. 
-        
-        Parameters: 
-        val: str or int
+        """Function initializing the UInt8 class. The initialization handles the overflow (numbers higher than 255). 
+
+        Parameters
+        ----------- 
+        - val: str or int
             a value that is to be converted into its 8 bit representation
         """
         if isinstance(val, str):
@@ -42,26 +43,96 @@ class UInt8:
             self._value = val & 0xFF
     
     def __eq__(self, other):
+        """Method checking the equality between two UInt8 values.
+        
+        Parameters
+        ----------
+        - other: UInt8
+            the instance for the comparision 
+        
+        Returns
+        -------
+        - Bool 
+
+        Example
+        -------
+        >>> str(UInt8(255) == UInt8(1))
+        'False'
+        >>> str(UInt8(15) == UInt8(15)) 
+        'True'
+        Hadeling overflow:
+        >>> str(UInt8(257) == UInt8(1))
+        'True'
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         return self._value == other._value
 
     def __str__(self):
+        """Method printing the binary representation of the instanciated value.
+        
+        Example
+        -------
+        >>> str(UInt8(5))
+        '00000101'
+        >>> str(UInt8(17))
+        '00010001'
+        """
         return f"{self._value:08b}"
     
     def __add__(self, other):
+        """Method performing addition of two UInt8 values. It acts just like regular addition with overflow handling (as the result is an UInt8). 
+        
+        Parameters
+        ----------
+        - other: UInt8
+            the instance that is to be added 
+        
+        Returns
+        -------
+        - UInt8
+
+        Example
+        -------
+        >>> str(UInt8(5) + UInt8(17))
+        '00010110'
+        >>> str(UInt8(0) + UInt8(1)) 
+        '00000001'
+        Handeling overflow:
+        >>> str(UInt8(255) + UInt8(1))
+        '00000000'
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
         return UInt8(self._value + other._value)
 
     def __sub__(self, other):
+        """Method performing substractio of another UInt8 value. It acts just like regular substractio with overflow handling (as the result is an UInt8). 
+        
+        Parameters
+        ----------
+        - other: UInt8
+            the instance that is to be substracted 
+
+        Returns
+        -------
+        - UInt8
+
+        Examples
+        --------
+        >>> str(UInt8(15) -  UInt8(15))
+        '00000000'
+        >>> str(UInt8(250) -  UInt8(15))
+        '11101011'
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
         return UInt8(self._value - other._value)
 
     def __lshift__(self, other):
+
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
