@@ -2,12 +2,30 @@
 # - change all asserts to raise Exceptions
 
 class UInt8:
+    """ A data type representaing a value as an unsigned int8.
+
+    Attributes:
+    -----------
+     - val: int|str
+            the value of the number to be converted into UInt8
     
+    Methods:
+    -----------
+     - __str__ 
+     - __add__
+     - __sub__
+     - __lshift__
+     - __rshift__
+     - __xor__
+     - __invert__
+     - __and__
+    """
     def __init__(self, val: int|str):
         """Function initializing the UInt8 class 
+        
         Parameters: 
         val: str or int
-            a value that is to be converted into the 8 bit representatio of this number
+            a value that is to be converted into its 8 bit representation
         """
         # TODO: change the class definition to work also with a str
         self._value = val & 0xFF
