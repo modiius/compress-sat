@@ -11,24 +11,24 @@ class LengthError(Exception):
 class UInt8:
     """ A class representaing a data type value as an unsigned int8.
 
-    Attributes:
-    -----------
-     - val: int|str
+    Attributes
+    ----------
+    - val: int|str
             the value of the number to be converted into UInt8
     
-    Methods:
+    Methods
     -----------
-     - __str__ 
-     - __add__
-     - __sub__
-     - __lshift__
-     - __rshift__
-     - __xor__
-     - __invert__
+    - __str__ 
+    - __add__
+    - __sub__
+    - __lshift__
+    - __rshift__
+    - __xor__
+    - __invert__
      - __and__
     """
     def __init__(self, val: int|str):
-        """Function initializing the UInt8 class 
+        """Function initializing the UInt8 class. 
         
         Parameters: 
         val: str or int
