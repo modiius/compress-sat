@@ -11,6 +11,10 @@ class UInt8:
             self._value = int(val, 2) & 0xFF
         else:
             self._value = val & 0xFF
+    
+    def __eq__(self, other):
+        assert isinstance(other, UInt8)
+        return self._value == other._value
 
     def __str__(self):
         return f"{self._value:08b}"
