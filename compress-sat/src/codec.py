@@ -60,7 +60,7 @@ class UInt8:
         'False'
         >>> str(UInt8(15) == UInt8(15)) 
         'True'
-        Hadeling overflow:
+        Hadling overflow:
         >>> str(UInt8(257) == UInt8(1))
         'True'
         """
@@ -98,7 +98,7 @@ class UInt8:
         '00010110'
         >>> str(UInt8(0) + UInt8(1)) 
         '00000001'
-        Handeling overflow:
+        Handling overflow:
         >>> str(UInt8(255) + UInt8(1))
         '00000000'
         """
@@ -125,6 +125,9 @@ class UInt8:
         '00000000'
         >>> str(UInt8(250) -  UInt8(15))
         '11101011'
+        Negative numbers (wrap around):
+        >>> str(UInt8(20) -  UInt8(25))    
+        '11111011'
         """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
