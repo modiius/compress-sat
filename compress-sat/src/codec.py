@@ -1,3 +1,13 @@
+class TypeUInt8Exception(Exception):
+    def __init__(self, value):
+        self.message = f"Expected type 'UInt8', but '{type(value).__name__}' was given."
+        super().__init__(self.message)
+
+class LengthError(Exception):
+    def __init__(self, value):
+        self.message = f'Expected length is divisible by 8. Found length: {len(value)}.'
+        super().__init__(self.message)
+
 class UInt8:
     """ A class representaing a data type value as an unsigned int8.
 
@@ -26,14 +36,14 @@ class UInt8:
         """
         if isinstance(val, str):
             if len(val) != 8:
-                raise ValueError(f'Expected length is divisible by 8 and a string of len={len(val)} was given.')
+                raise LengthError(val)
             self._value = int(val, 2) & 0xFF
         else:
             self._value = val & 0xFF
     
     def __eq__(self, other):
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         return self._value == other._value
 
     def __str__(self):
@@ -41,19 +51,19 @@ class UInt8:
     
     def __add__(self, other):
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         
         return UInt8(self._value + other._value)
 
     def __sub__(self, other):
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         
         return UInt8(self._value - other._value)
 
     def __lshift__(self, other):
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         
         return UInt8(self._value << other._value)
     
@@ -62,7 +72,7 @@ class UInt8:
     def __rshift__(self, other):
         """Arithmetic right shift"""
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         
         if self._value & 2**7 != 0:
             mask = int("1"*other._value + "0"*(8-other._value), 2)
@@ -79,7 +89,7 @@ class UInt8:
     
     def __xor__(self, other):
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         
         return UInt8(self._value ^ other._value)
     
@@ -88,7 +98,7 @@ class UInt8:
     
     def __and__(self, other):
         if not isinstance(other, UInt8):
-            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+            raise TypeUInt8Exception(other)
         
         return UInt8(self._value & other._value)
 
@@ -99,7 +109,7 @@ def as_str(data_uint8: list[UInt8]):
 
 def as_uint8(data_str: str):
     if len(data_str) % 8 != 0:
-        raise ValueError(f'Expected length is divisible by 8 and not len={len(data_str)}.')
+        raise LengthError(data_str)
     data_uint8 = []
     for i in range(0, len(data_str), 8):
         value = UInt8(data_str[i:i+8])
@@ -109,6 +119,8 @@ def as_uint8(data_str: str):
 
 
 def transpose(data: list) -> list[str]:
+    if len(data) == 0:
+        data_t = []
     data_t = []
     for pos in range(len(str(data[0]))): 
         row_t = ""
