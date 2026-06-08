@@ -1,6 +1,3 @@
-# TODO:
-# - change all asserts to raise Exceptions
-
 class UInt8:
     """ A data type representaing a value as an unsigned int8.
 
@@ -27,8 +24,11 @@ class UInt8:
         val: str or int
             a value that is to be converted into its 8 bit representation
         """
-        # TODO: change the class definition to work also with a str
-        self._value = val & 0xFF
+        if isinstance(val, str):
+            assert len(val) == 8
+            self._value = int(val, 2) & 0xFF
+        else:
+            self._value = val & 0xFF
 
     def __str__(self):
         return f"{self._value:08b}"
@@ -75,7 +75,7 @@ def as_uint8(data_str: str):
     assert len(data_str) % 8 == 0
     data_uint8 = []
     for i in range(0, len(data_str), 8):
-        value = UInt8(int(data_str[i:i+8], 2))
+        value = UInt8(data_str[i:i+8])
         data_uint8.append(value)
     
     return data_uint8
@@ -108,21 +108,18 @@ def encode(data_str: list[str]) -> tuple[int, str]:
 
 def compress(data: str):
     data_uint8 = as_uint8(data)
-    print(f"ORIGINAL DATA: {[str(og) for og in data_uint8]}")
     first = data_uint8[0]
     delta = [data_uint8[i] - data_uint8[i+1] for i in range(len(data_uint8)-1)]
-    print(f"DELTA: {[str(d) for d in delta]}")
     zigzag = [(d<<UInt8(1))^(d>>UInt8(7)) for d in delta]
-    print(f"ZIGZAG: {[str(z) for z in zigzag]}")
     zigzag_t = transpose(zigzag)
     encoded_zigzag_t = encode(zigzag_t)
-    print(f"TUPLE: {[x for x in encoded_zigzag_t]}")
 
     result = f"{len(data_uint8):016b}{str(first)}"
     for num_zeros, remainder in encoded_zigzag_t:
         result = result + f"{num_zeros:016b}" + remainder
 
     return result
+
 
 def decode(data: list[tuple[int, str]]):
     data_str = []
@@ -133,9 +130,10 @@ def decode(data: list[tuple[int, str]]):
     return data_str
 
 
-def decompress(data: str):
-    delta_length = int(data[:16], 2) - 1    # minus one because the length is smaller by one through the delta (minusing the values from one another)
-    first_value = UInt8(int(data[16:24], 2))
+def decompress(data: str) -> str:
+    # minus one because the length is smaller by one through the delta (minusing the values from one another)
+    delta_length = int(data[:16], 2) - 1
+    first_value = UInt8(data[16:24])
     data = data[24:]
     encode = []
     for _ in range(8):
@@ -145,23 +143,13 @@ def decompress(data: str):
         encode.append((num_zeros, reminder))
         data = data[(16 + reminder_len):]
     
-    print(f"TUPLE: {[x for x in encode]}")
     zigzag_t = decode(encode)
     zigzag = transpose(zigzag_t)
-    print(f"ZIGZAG: {zigzag}")
-    delta = [(UInt8(int(z, 2))>>UInt8(1))^(~(UInt8(int(z, 2))&UInt8(1)) + UInt8(1)) for z in zigzag]
-    print(f"DELTA: {[str(d) for d in delta]}")
+    # link website showing zigzag encoding
+    delta = [(UInt8(z)>>UInt8(1))^(~(UInt8(z)&UInt8(1)) + UInt8(1)) for z in zigzag]
     original_data = [first_value]
     for i in range(len(delta)):
         data = original_data[i] - delta[i]
         original_data.append(data)
-    print(f"ORIGINAL DATA: {[str(og) for og in original_data]}")
     
-
-if __name__ == "__main__":
-    import random
-    data = [random.choice([UInt8(25),UInt8(24),UInt8(23)]) for _ in range(10)]
-    orig = as_str(data)
-    compressed = compress(orig)
-    print("===================")
-    decompress(compressed)
+    return as_str(original_data)

@@ -1,3 +1,9 @@
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
