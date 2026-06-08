@@ -1,10 +1,3 @@
-# TODO:
-# - change all asserts to raise Exceptions
-import math
-import sys
-
-from download import load_dynamic_world
-
 class UInt8:
     
     def __init__(self, val: int|str):
@@ -13,8 +6,11 @@ class UInt8:
         val: str or int
             a value that is to be converted into the 8 bit representatio of this number
         """
-        # TODO: change the class definition to work also with a str
-        self._value = val & 0xFF
+        if isinstance(val, str):
+            assert len(val) == 8
+            self._value = int(val, 2) & 0xFF
+        else:
+            self._value = val & 0xFF
 
     def __str__(self):
         return f"{self._value:08b}"
@@ -61,7 +57,7 @@ def as_uint8(data_str: str):
     assert len(data_str) % 8 == 0
     data_uint8 = []
     for i in range(0, len(data_str), 8):
-        value = UInt8(int(data_str[i:i+8], 2))
+        value = UInt8(data_str[i:i+8])
         data_uint8.append(value)
     
     return data_uint8
@@ -106,6 +102,7 @@ def compress(data: str):
 
     return result
 
+
 def decode(data: list[tuple[int, str]]):
     data_str = []
     for num_zeros, reminder in data:
@@ -116,8 +113,9 @@ def decode(data: list[tuple[int, str]]):
 
 
 def decompress(data: str):
-    delta_length = int(data[:16], 2) - 1    # minus one because the length is smaller by one through the delta (minusing the values from one another)
-    first_value = UInt8(int(data[16:24], 2))
+    # minus one because the length is smaller by one through the delta (minusing the values from one another)
+    delta_length = int(data[:16], 2) - 1
+    first_value = UInt8(data[16:24])
     data = data[24:]
     encode = []
     for _ in range(8):
@@ -129,20 +127,9 @@ def decompress(data: str):
     
     zigzag_t = decode(encode)
     zigzag = transpose(zigzag_t)
-    delta = [(UInt8(int(z, 2))>>UInt8(1))^(~(UInt8(int(z, 2))&UInt8(1)) + UInt8(1)) for z in zigzag]
+    # link website showing zigzag encoding
+    delta = [(UInt8(z, 2)>>UInt8(1))^(~(UInt8(z)&UInt8(1)) + UInt8(1)) for z in zigzag]
     original_data = [first_value]
     for i in range(len(delta)):
         data = original_data[i] - delta[i]
         original_data.append(data)
-    
-
-if __name__ == "__main__":
-    data = load_dynamic_world("data/dw_water")
-    print(data)
-    print(sys.getsizeof(data))
-    print([math.floor(d*100) for d in data])
-    lossy_data = [UInt8(math.floor(d*100)) for d in data]
-    uncompressed = as_str(lossy_data)
-    compressed = compress(uncompressed)
-    print(len(uncompressed))
-    print(len(compressed))
