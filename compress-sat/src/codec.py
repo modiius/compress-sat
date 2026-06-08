@@ -60,6 +60,7 @@ class UInt8:
     # NOTE: Arithmetic rightshift NOT logical rightshift
     # Insert stack overflow answer here...
     def __rshift__(self, other):
+        """Arithmetic right shift"""
         if not isinstance(other, UInt8):
             raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
         
@@ -68,6 +69,13 @@ class UInt8:
             return UInt8((self._value >> other._value) | mask)
         else:
             return UInt8(self._value >> other._value)
+    
+    def __matmul__(self, other):
+        """Logical right shift"""
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
+        return UInt8(self._value >> other._value)
     
     def __xor__(self, other):
         if not isinstance(other, UInt8):
@@ -111,7 +119,7 @@ def transpose(data: list) -> list[str]:
     return data_t
 
 
-def encode(data_str: list[str]) -> tuple[int, str]:
+def encode_count(data_str: list[str]) -> tuple[int, str]:
     data_tuple = []
     for sequence in data_str:
         count = 0
@@ -125,13 +133,17 @@ def encode(data_str: list[str]) -> tuple[int, str]:
     return data_tuple
 
 
+def encode_zigzag(n: UInt8, k=UInt8(8)):
+    return (n << UInt8(1)) ^ (n >> (k - UInt8(1)))
+
+
 def compress(data: str):
     data_uint8 = as_uint8(data)
     first = data_uint8[0]
     delta = [data_uint8[i] - data_uint8[i+1] for i in range(len(data_uint8)-1)]
-    zigzag = [(d<<UInt8(1))^(d>>UInt8(7)) for d in delta]
+    zigzag = [encode_zigzag(d) for d in delta]
     zigzag_t = transpose(zigzag)
-    encoded_zigzag_t = encode(zigzag_t)
+    encoded_zigzag_t = encode_count(zigzag_t)
 
     result = f"{len(data_uint8):016b}{str(first)}"
     for num_zeros, remainder in encoded_zigzag_t:
@@ -140,13 +152,17 @@ def compress(data: str):
     return result
 
 
-def decode(data: list[tuple[int, str]]):
+def decode_count(data: list[tuple[int, str]]):
     data_str = []
     for num_zeros, reminder in data:
         zeros = '0' * num_zeros
         data_str.append(zeros + reminder)
 
     return data_str
+
+
+def decode_zigzag(n: UInt8):
+    return (n @ UInt8(1)) ^ (~(n & UInt8(1)) + UInt8(1))
 
 
 def decompress(data: str) -> str:
@@ -162,10 +178,10 @@ def decompress(data: str) -> str:
         encode.append((num_zeros, reminder))
         data = data[(16 + reminder_len):]
     
-    zigzag_t = decode(encode)
+    zigzag_t = decode_count(encode)
     zigzag = transpose(zigzag_t)
     # link website showing zigzag encoding
-    delta = [(UInt8(z)>>UInt8(1))^(~(UInt8(z)&UInt8(1)) + UInt8(1)) for z in zigzag]
+    delta = [decode_zigzag(UInt8(int(z, 2))) for z in zigzag]
     original_data = [first_value]
     for i in range(len(delta)):
         data = original_data[i] - delta[i]
