@@ -112,7 +112,7 @@ def decode(data: list[tuple[int, str]]):
     return data_str
 
 
-def decompress(data: str):
+def decompress(data: str) -> str:
     # minus one because the length is smaller by one through the delta (minusing the values from one another)
     delta_length = int(data[:16], 2) - 1
     first_value = UInt8(data[16:24])
@@ -128,8 +128,10 @@ def decompress(data: str):
     zigzag_t = decode(encode)
     zigzag = transpose(zigzag_t)
     # link website showing zigzag encoding
-    delta = [(UInt8(z, 2)>>UInt8(1))^(~(UInt8(z)&UInt8(1)) + UInt8(1)) for z in zigzag]
+    delta = [(UInt8(z)>>UInt8(1))^(~(UInt8(z)&UInt8(1)) + UInt8(1)) for z in zigzag]
     original_data = [first_value]
     for i in range(len(delta)):
         data = original_data[i] - delta[i]
         original_data.append(data)
+    
+    return as_str(original_data)
