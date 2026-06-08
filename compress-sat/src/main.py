@@ -11,8 +11,8 @@ if __name__ == "__main__":
     data_dir = "data"
 
     data = []; original_size = 0
-    for file in os.listdir(data_dir):
-        pixel_data = load_dynamic_world(os.path.join(data_dir, file))
+    for band in DW_BANDS:
+        pixel_data = load_dynamic_world(os.path.join(data_dir, f"dw_{band}"))
         original_size += len(pixel_data) * 4  # assumes values take up 4 bytes (32 bits) in memory
         data.append(pixel_data)
     print(f"Original size (float32): {original_size} bytes")
@@ -38,3 +38,5 @@ if __name__ == "__main__":
     print(f"Compression ratio: {original_size / compressed_size:.4f}")
 
     plot(data, decompressed_data, DW_BANDS)
+
+
