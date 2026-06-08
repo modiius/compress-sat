@@ -32,7 +32,8 @@ class UInt8:
             self._value = val & 0xFF
     
     def __eq__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
         return self._value == other._value
 
     def __str__(self):
