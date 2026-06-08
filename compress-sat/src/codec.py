@@ -1,13 +1,32 @@
 class UInt8:
+    """ A class representaing a data type value as an unsigned int8.
+
+    Attributes:
+    -----------
+     - val: int|str
+            the value of the number to be converted into UInt8
     
+    Methods:
+    -----------
+     - __str__ 
+     - __add__
+     - __sub__
+     - __lshift__
+     - __rshift__
+     - __xor__
+     - __invert__
+     - __and__
+    """
     def __init__(self, val: int|str):
         """Function initializing the UInt8 class 
+        
         Parameters: 
         val: str or int
-            a value that is to be converted into the 8 bit representatio of this number
+            a value that is to be converted into its 8 bit representation
         """
         if isinstance(val, str):
-            assert len(val) == 8
+            if len(val) != 8:
+                raise ValueError(f'Expected length is divisible by 8 and a string of len={len(val)} was given.')
             self._value = int(val, 2) & 0xFF
         else:
             self._value = val & 0xFF
@@ -20,21 +39,29 @@ class UInt8:
         return f"{self._value:08b}"
     
     def __add__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
         return UInt8(self._value + other._value)
 
     def __sub__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
         return UInt8(self._value - other._value)
 
     def __lshift__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
         return UInt8(self._value << other._value)
     
     # NOTE: Arithmetic rightshift NOT logical rightshift
     # Insert stack overflow answer here...
     def __rshift__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
         if self._value & 2**7 != 0:
             mask = int("1"*other._value + "0"*(8-other._value), 2)
             return UInt8((self._value >> other._value) | mask)
@@ -42,14 +69,18 @@ class UInt8:
             return UInt8(self._value >> other._value)
     
     def __xor__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
         return UInt8(self._value ^ other._value)
     
     def __invert__(self):
         return UInt8(~self._value)
     
     def __and__(self, other):
-        assert isinstance(other, UInt8)
+        if not isinstance(other, UInt8):
+            raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
+        
         return UInt8(self._value & other._value)
 
 
@@ -58,7 +89,8 @@ def as_str(data_uint8: list[UInt8]):
 
 
 def as_uint8(data_str: str):
-    assert len(data_str) % 8 == 0
+    if len(data_str) % 8 != 0:
+        raise ValueError(f'Expected length is divisible by 8 and not len={len(data_str)}.')
     data_uint8 = []
     for i in range(0, len(data_str), 8):
         value = UInt8(data_str[i:i+8])
