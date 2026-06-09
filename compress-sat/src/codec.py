@@ -18,20 +18,22 @@ class UInt8:
     
     Methods
     -----------
-    - __str__ 
-    - __add__
-    - __sub__
-    - __lshift__
-    - __rshift__
-    - __xor__
-    - __invert__
-     - __and__
+    - __str__ : printing the binary representation  
+    - __eq__ : equality (==)
+    - __add__ : addition (+)
+    - __sub__ : substraction (-)
+    - __lshift__ : left shift opertion (<<)
+    - __rshift__ : arithmetic right shift (>>)
+    - __matmul__ : logical right shift (@)
+    - __xor__ : logical exclusive OR operation (^)
+    - __invert__ : bit inversion (~)
+    - __and__ : logical AND operation (&)
     """
     def __init__(self, val: int|str):
         """Function initializing the UInt8 class. The initialization handles the overflow (numbers higher than 255). 
 
         Parameters
-        ----------- 
+        ----------
         - val: str or int
             a value that is to be converted into its 8 bit representation
         """
@@ -40,7 +42,23 @@ class UInt8:
                 raise LengthError(val)
             self._value = int(val, 2) & 0xFF
         else:
-            self._value = val & 0xFF
+            self._value = val & 0xFF  
+
+    def __str__(self):
+        """Method printing the binary representation of the instanciated value.
+        
+        Returns
+        -------
+        - str
+
+        Example
+        -------
+        >>> str(UInt8(5))
+        '00000101'
+        >>> str(UInt8(17))
+        '00010001'
+        """
+        return f"{self._value:08b}"
     
     def __eq__(self, other):
         """Method checking the equality between two UInt8 values.
@@ -48,7 +66,7 @@ class UInt8:
         Parameters
         ----------
         - other: UInt8
-            the instance for the comparision 
+            the other value for the comparision 
         
         Returns
         -------
@@ -66,19 +84,8 @@ class UInt8:
         """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
-        return self._value == other._value
-
-    def __str__(self):
-        """Method printing the binary representation of the instanciated value.
         
-        Example
-        -------
-        >>> str(UInt8(5))
-        '00000101'
-        >>> str(UInt8(17))
-        '00010001'
-        """
-        return f"{self._value:08b}"
+        return self._value == other._value
     
     def __add__(self, other):
         """Method performing addition of two UInt8 values. It acts just like regular addition with overflow handling (as the result is an UInt8). 
@@ -86,7 +93,7 @@ class UInt8:
         Parameters
         ----------
         - other: UInt8
-            the instance that is to be added 
+            the other value that is to be added 
         
         Returns
         -------
@@ -113,7 +120,7 @@ class UInt8:
         Parameters
         ----------
         - other: UInt8
-            the instance that is to be substracted 
+            the other value that is to be substracted 
 
         Returns
         -------
@@ -135,16 +142,58 @@ class UInt8:
         return UInt8(self._value - other._value)
 
     def __lshift__(self, other):
+        """Method performig the left shift by a given number (as UInt8).
+        
+        Parameters
+        ----------
+        - other: UInt8
+            the number to shift by
 
+        Returns
+        -------
+        - UInt8
+
+        Example
+        -------
+        >>> str(UInt8(5))
+        '00000101'
+        >>> str(UInt8(5) << UInt8(2))
+        '00010100'
+        >>> str(UInt8(5) << UInt8(10))
+        '00000000'
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
         return UInt8(self._value << other._value)
     
-    # NOTE: Arithmetic rightshift NOT logical rightshift
-    # Insert stack overflow answer here...
+
     def __rshift__(self, other):
-        """Arithmetic right shift"""
+        """Method performing the arithmetic right shift by a given number (as UInt8).
+        
+        The arithmetic right shift checks if the furthest left bit (2^7) is equal to 1 or 0 and shifts the values bits to the right, filling the gaps with the same value (either 1 or 0).
+        The arithetic right shift description: https://stackoverflow.com/questions/64963170/how-to-do-arithmetic-right-shift-in-python-for-signed-and-unsigned-values
+
+        Parameters
+        ----------
+        - other: UInt8
+            the number to shift by
+
+        Returns
+        -------
+        - UInt8
+
+        Example
+        -------
+        >>> str(UInt8(200))
+        '11001000'
+        >>> str(UInt8(200) >> UInt8(2))
+        '11110010'
+        >>> str(UInt8(20))             
+        '00010100'
+        >>> str(UInt8(20) >> UInt8(2)) 
+        '00000101'
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
@@ -155,22 +204,107 @@ class UInt8:
             return UInt8(self._value >> other._value)
     
     def __matmul__(self, other):
-        """Logical right shift"""
+        """Method performing the logical right shift.
+        
+        Shifts the values bits to the right, filling the gaps always with 0.
+
+        Parameters
+        ----------
+        - other: UInt8
+            the number to shift by
+
+        Returns
+        -------
+        - UInt8
+
+        Example
+        -------
+        >>> str(UInt8(20))            
+        '00010100'
+        >>> str(UInt8(20) @ (UInt8(2)))
+        '00000101'
+        >>> str(UInt8(200))             
+        '11001000'
+        >>> str(UInt8(200) @ (UInt8(2)))
+        '00110010'
+        """
         if not isinstance(other, UInt8):
             raise TypeError(f'Expected type is UInt8 and a {type(other)} was given.')
         
         return UInt8(self._value >> other._value)
     
     def __xor__(self, other):
+        """Method performig a logical exclusive OR operation on corresponding bits on two equal-lenght binary representations.. 
+
+        If both bits are equal to 1 or 0 then the result is equal to 0, otherwise the result is equal to 1.
+
+        Parameters
+        ----------
+        - other: UInt8
+            the other value we are performing the logical exclusive OR operation with
+        
+        Returns
+        -------
+        - UInt8
+
+        Example
+        -------
+        >>> str((UInt8(2)))             
+        '00000010'
+        >>> str((UInt8(6)))
+        '00000110'
+        >>> str((UInt8(6)^ UInt8(2)))
+        '00000100'
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
         return UInt8(self._value ^ other._value)
     
     def __invert__(self):
+        """Method performing bit inversion on an UInt8.
+
+        Returns
+        -------
+        - UInt8        
+
+        Example
+        -------
+        >>> str(UInt8(9))
+        '00001001'
+        >>> str(~UInt8(9))
+        '11110110'
+        """
         return UInt8(~self._value)
     
     def __and__(self, other):
+        """Method performing a logical AND operation on two equal-lenght binary representations.
+
+        The representations are compared bit by bit on the correspondig positions. If both bits are equal to 1 then the result is also equal to 1, otherwise the result is equal to 0. 
+
+        Parameters
+        ----------
+        - other: UInt8
+            the other value we are performing logical AND operation with
+        
+        Returns
+        -------
+        - UInt8
+        
+        Example
+        -------
+        >>> str(UInt8(5))             
+        '00000101'
+        >>> str(UInt8(1))
+        '00000001'
+        >>> str(UInt8(5) & (UInt8(1)))
+        '00000001'
+        >>> str(UInt8(5) & (UInt8(5)))
+        '00000101'
+        >>> str(UInt8(5) & ~(UInt8(5)))
+        '00000000'
+
+        """
         if not isinstance(other, UInt8):
             raise TypeUInt8Exception(other)
         
@@ -178,6 +312,7 @@ class UInt8:
 
 
 def as_str(data_uint8: list[UInt8]):
+    
     return "".join([str(d) for d in data_uint8])
 
 
