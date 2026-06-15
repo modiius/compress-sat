@@ -312,11 +312,46 @@ class UInt8:
 
 
 def as_str(data_uint8: list[UInt8]):
+    """Function translating a list of UInt8 values into a one string representation of thouse values.
     
+    Parameters
+    ----------
+     - data_uint8: list[UInt8]
+        a list of UInt8 values
+        
+    Returns
+    -------
+     - concatinate string representation of the values 
+     
+    Exaple
+    >>> as_str([UInt8(2), UInt8(5)])
+    '0000001000000101'
+    >>> as_str([UInt8(1)])
+    '00000001'
+    >>> as_str([UInt8(3), UInt8(1), UInt8(25)])
+    '000000110000000100011001'
+    """
     return "".join([str(d) for d in data_uint8])
 
 
 def as_uint8(data_str: str):
+    """Function splitting a string representatio of many UInt8 vlues into the consecutive UInt8 values.
+    
+    Parameters
+    ----------
+     - data_str: str
+        the string of 1 and 0 representing UInt8 values
+        
+    Returns
+    -------
+     - data_uint8: list[UInt8]
+        a list of UInt8 values extracted form the string
+    
+    Example
+    -------
+    >>> as_uint8('000000110000000100011001')
+    '[<codec.UInt8 object at 0x000001FBF747E5F0>, <codec.UInt8 object at 0x000001FBF74DD980>, <codec.UInt8 object at 0x000001FBF7520050>]'
+    """
     if len(data_str) % 8 != 0:
         raise LengthError(data_str)
     data_uint8 = []
@@ -328,6 +363,31 @@ def as_uint8(data_str: str):
 
 
 def transpose(data: list) -> list[str]:
+    """Function that transposes a list of elements. The elements of that list have to have the same length. 
+    
+    The function returns a list thats length is equal to the original list element length. The elements of the transposed list have the same length as the original list length.
+
+    Parameters
+    ----------
+     - data: list
+        list of same length elements
+    
+    Returns
+    -------
+     - data_t: list
+        list of transposed values
+    
+    Example
+    -------
+    >>> transpose([UInt8(1), UInt8(0)])
+    ['00', '00', '00', '00', '00', '00', '00', '10']
+    >>> transpose(['00', '00', '00', '00', '00', '00', '00', '10'])
+    ['00000001', '00000000']
+    >>> transpose(['red', 'red'])
+    ['rr', 'ee', 'dd']
+    """
+    # TODO: make sure that the elements of the list have the same length
+    
     if len(data) == 0:
         data_t = []
     data_t = []
@@ -341,6 +401,25 @@ def transpose(data: list) -> list[str]:
 
 
 def encode_count(data_str: list[str]) -> tuple[int, str]:
+    """Function that takes in a list of strings and returns a tuple containig the count of zeros at the beggining of every element of the list and the remaining part of this element.
+     
+    Parameters
+    -----------
+     - data_str: list[str]
+        the list of strings
+    
+    Returns
+    -------
+     - data_tuple: list[tuple(int, str)]
+        the list of tuples consisting of the amout of zeros andthe remining string value 
+    
+    Example
+    -------
+    >>> encode_count(['000001011', '0010101', '000000'])
+    [(5, '1011'), (2, '10101'), (6, '')]
+    >>> encode_count(['000001', '00001100', '0000000']) 
+    [(5, '1'), (4, '1100'), (7, '')]
+    """
     data_tuple = []
     for sequence in data_str:
         count = 0
@@ -355,6 +434,36 @@ def encode_count(data_str: list[str]) -> tuple[int, str]:
 
 
 def encode_zigzag(n: UInt8, k=UInt8(8)):
+    """Fuction that performes zigzag encoding on the UInt8 values. 
+
+    Zigzag encoding maps the negative numbers in the UInt8 representation to positive number representations (-1 becomes 1, 1 becomes 2, -2 becomes 3 and so on...).
+    All the positive values are represented by even numbers (their double values) and all of the negative values are represented by uneven numbers (their double absolute value minus 1).
+
+    Parameters
+    ----------
+     - n: UInt8
+        the UInt8 value to be encoded
+    
+    Returns
+    -------
+     - UInt8 
+        encoded value
+    
+    Example
+    -------
+    >>> str(UInt8(1)) 
+    '00000001'
+    >>> str(encode_zigzag(UInt8(1)))   
+    '00000010'
+    >>> str(UInt8(-1))
+    '11111111'
+    >>> str(encode_zigzag(UInt8(-1)))
+    '00000001'
+    >>> str(UInt8(-2))
+    '11111110'
+    >>> str(encode_zigzag(UInt8(-2)))
+    '00000011'
+    """
     return (n << UInt8(1)) ^ (n >> (k - UInt8(1)))
 
 
@@ -374,6 +483,27 @@ def compress(data: str):
 
 
 def decode_count(data: list[tuple[int, str]]):
+    """Function that decoded the tuple of the value of zeroes and the remaining string into a list of strings.
+    
+    *This function does the opposite to the "encode_count" function.
+
+    Parameters
+    ----------
+     - data: list[touple(int, str)]
+        list of touples 
+    
+    Returns
+    -------
+     - data_str: list[str]
+        list of strings 
+    
+    Example
+    -------
+    >>> decode_count([(4, '1110'), (2, '101011'), (7, '1'),(8, '')])
+    ['00001110', '00101011', '00000001', '00000000']
+    >>> decode_count([(5, '10'), (2, '1010101'), (4, 'red')])
+    ['0000010', '001010101', '0000red']
+    """
     data_str = []
     for num_zeros, reminder in data:
         zeros = '0' * num_zeros
