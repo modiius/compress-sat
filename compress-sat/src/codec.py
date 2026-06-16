@@ -386,7 +386,6 @@ def transpose(data: list) -> list[str]:
     >>> transpose(['red', 'red'])
     ['rr', 'ee', 'dd']
     """
-    # TODO: make sure that the elements of the list have the same length
     
     if len(data) == 0:
         data_t = []
