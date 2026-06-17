@@ -435,6 +435,8 @@ def encode_count(data_str: list[str]) -> tuple[int, str]:
 def encode_zigzag(n: UInt8, k=UInt8(8)):
     """Fuction that performes zigzag encoding on the UInt8 values. 
 
+    Based on: https://gist.github.com/mfuerstenau/ba870a29e16536fdbaba.
+    
     Zigzag encoding maps the negative numbers in the UInt8 representation to positive number representations (-1 becomes 1, 1 becomes 2, -2 becomes 3 and so on...).
     All the positive values are represented by even numbers (their double values) and all of the negative values are represented by uneven numbers (their double absolute value minus 1).
 
@@ -467,6 +469,27 @@ def encode_zigzag(n: UInt8, k=UInt8(8)):
 
 
 def compress(data: str):
+    """Function performing the compression of a string of data.
+    
+    Function devides the string into UInt8 values and saves the first value. Calculates the differences between each datapoint and it's next neighbour, resoulting in the length of the list of data being one smaller than at the begining.
+    The substraction of values and the zigzag encoding is used to maximize the amount of zeros at the begenning of each row, as they are the elemet to be compressed.
+    
+    Parameters
+    ----------
+     - data: str
+        the string of 1 and 0 
+    
+    Returns
+    -------
+     - result: str
+        a string which first 16 bits encode the length of the original data list, the next 8 bits encode the first value from the dataset. The rest of the result is the amount of zeros (encoded in 16 bit value) and the remainder for each of the transposed data values.
+        
+    Example
+    -------
+    >>> compress('0000000100000111000000100000000000000011')                
+    '0000000000000101000000010000000000000100000000000000010000000000000001000000000000000100000000000000000011000000000000000010110000000000000000110000000000000000001001'
+    This compression works best for big datasets, for small ones its very inefficient.
+    """
     data_uint8 = as_uint8(data)
     first = data_uint8[0]
     delta = [data_uint8[i] - data_uint8[i+1] for i in range(len(data_uint8)-1)]
@@ -512,11 +535,54 @@ def decode_count(data: list[tuple[int, str]]):
 
 
 def decode_zigzag(n: UInt8):
+    """Fuction that reverses the zigzag encoding on the UInt8 value. 
+    
+    Based on: https://gist.github.com/mfuerstenau/ba870a29e16536fdbaba.
+
+    Parameters
+    ----------
+     - n: UInt8
+        value to be decoded
+    
+    Returns
+    -------
+     - UInt8
+        the decoded value
+
+    Example
+    -------
+    >>> str(UInt8(-1))
+    '11111111'
+    >>> str(encode_zigzag(UInt8(-1)))
+    '00000001'
+    >>> str(decode_zigzag(encode_zigzag(UInt8(-1))))
+    '11111111'
+    """
     return (n @ UInt8(1)) ^ (~(n & UInt8(1)) + UInt8(1))
 
 
 def decompress(data: str) -> str:
-    # minus one because the length is smaller by one through the delta (minusing the values from one another)
+    """This function performes decompression on a compressed dataset. It's a reverse of the compress function. 
+    
+    First it finds the length of data and the first value as the first 16 and 8 bits of the original data string. Then it devides the remaining dataset into 16 bit information about the amout of zeros and the remainders from the 8 bit representations of the values to later preform decoding.
+    The data is then transposed the zigzag encoding is decoded and the delta calculation id reversed.
+    
+    Parameters
+    ----------
+     - data: str
+        a string of data from the compression algorithm
+    
+    Returns
+    -------
+     - str
+        the original data string
+    
+    Example
+    -------
+    >>> decompress('0000000000000101000000010000000000000100000000000000010000000000000001000000000000000100000000000000000011000000000000000010110000000000000000110000000000000000001001')
+    '0000000100000111000000100000000000000011'
+    """
+    # minus one because the length of the list of data is smaller by one through the delta (substracting the values from one another)
     delta_length = int(data[:16], 2) - 1
     first_value = UInt8(data[16:24])
     data = data[24:]
